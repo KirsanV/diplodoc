@@ -1,0 +1,10 @@
+[run]
+source = src
+omit =
+    run_parser.py
+    docker_manager.py
+    src/main.py
+    src/__init__.py
+    src/*/__init__.py
+    */__pycache__/*
+    */tests/*

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: codeforces_bot_${HOSTNAME:-local}
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/codeforces_db
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+      - ./src:/app/src
+    restart: unless-stopped
+    command: python src/main.py
+
+  db:
+    image: postgres:13
+    container_name: codeforces_db_${HOSTNAME:-local}
+    environment:
+      POSTGRES_DB: codeforces_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  parser:
+    build: .
+    container_name: codeforces_parser_${HOSTNAME:-local}
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/codeforces_db
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+      - ./src:/app/src
+    restart: unless-stopped
+    command: python run_parser.py daemon
+
+volumes:
+  postgres_data:
